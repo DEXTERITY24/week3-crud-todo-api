@@ -12,11 +12,29 @@ app.get('/todos', (req, res) => {
   res.status(200).json(todos); // Send array as JSON
 });
 
+// GET Single - Read
+app.get('/todos/:id', (req, res) => {
+  const todoId = parseInt(req.params.id);
+const foundTodo = todo.find(t =>t.id ===todoId);
+  if(!foundTodo) {
+    return res.status(404).json({ error: "Todo item not found!" }); 
+  }
+  res.json(foundTodo)
+}); 
+  
 // POST New – Create
 app.post('/todos', (req, res) => {
-  const newTodo = { id: todos.length + 1, ...req.body }; // Auto-ID
-  todos.push(newTodo);
-  res.status(201).json(newTodo); // Echo back
+  const { task } = req.body;
+    if (!task || task.trim() === "") {
+        return res.status(400).json({ error: "Validation failed: 'task' field is required!" });
+    }
+  const newTodo = { 
+        id: todos.length + 1, 
+        task: task,
+        completed: false 
+    };
+    todos.push(newTodo);
+    res.status(201).json(newTodo)
 });
 
 // PATCH Update – Partial
@@ -42,6 +60,13 @@ app.get('/todos/completed', (req, res) => {
   res.json(completed); // Custom Read!
 });
 
+// GET Active Filter
+app.get('/todos/active', (req, res) => {
+    const activeTodos = todos.filter(t => t.completed === false);
+    res.json(activeTodos);
+});
+
+// Error Handling Middleware
 app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error!' });
 });
